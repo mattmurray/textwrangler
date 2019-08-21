@@ -2,3 +2,8 @@
 unidecode
 textblob
 nltk
+beautifulsoup4
+inflect
+contractions
+textsearch
+

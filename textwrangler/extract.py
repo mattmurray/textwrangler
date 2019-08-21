@@ -1,6 +1,11 @@
+from typing import Text
 
+def extract_token_count(text: Text) -> int:
+    return len(text.split())
 
-# word count
+def extract_character_count(text: Text) -> int:
+    pass
+
 # character count
 # average word length
 # number of stopwords
