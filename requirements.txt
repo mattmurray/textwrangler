@@ -6,4 +6,6 @@ beautifulsoup4
 inflect
 contractions
 textsearch
+gensim
+numpy
 
