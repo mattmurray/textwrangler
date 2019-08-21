@@ -1,0 +1,4 @@
+
+unidecode
+textblob
+nltk
