@@ -41,6 +41,3 @@ def replace_numbers_with_text_representations(text: Text) -> Text:
     p = inflect.engine()
     return ' '.join([(p.number_to_words(token) if token.isdigit() else token) for token in nltk.word_tokenize(text)])
 
-
-# stem words
-# lemmatize words

@@ -8,4 +8,6 @@ contractions
 textsearch
 gensim
 numpy
-
+textstat
+langdetect
+tqdm
