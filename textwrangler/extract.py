@@ -1,4 +1,5 @@
 from typing import Text, Dict, List
+import nltk
 from nltk.corpus import stopwords
 import numpy as np
 import os
@@ -10,86 +11,118 @@ from gensim.models import KeyedVectors
 import textstat
 from langdetect import detect, detect_langs
 
-def extract_token_count(text: Text) -> int:
-    return len(text.split())
 
-def extract_string_length(text: Text, exclude_whitespace=True) -> int:
-    if exclude_whitespace == True:
-        len(''.join(text.split()))
-    else:
-        return len(text)
+class TextWranglerExtract:
 
-def extract_average_token_size(text: Text) -> float:
-  tokens = text.split()
-  return sum(len(token) for token in tokens)/len(tokens)
+    def __init__(self, extract_token_count=True, extract_string_length=True, extract_average_token_size=True,
+                 extract_stop_word_count=True, extract_numerical_token_count=True, extract_upper_token_count=True,
+                 extract_readability_scores=True, extract_language=True):
 
-def extract_stop_word_count(text: Text) -> int:
-    return len([token for token in text.split() if token in stopwords.words('english')])
+        self.output = []
+        self.text = None
+        self.extract_token_count = extract_token_count
+        self.extract_string_length = extract_string_length
+        self.extract_average_token_size = extract_average_token_size
+        self.extract_stop_word_count = extract_stop_word_count
+        self.extract_numerical_token_count = extract_numerical_token_count
+        self.extract_upper_token_count = extract_upper_token_count
+        self.extract_readability_scores = extract_readability_scores
+        self.extract_language = extract_language
 
-def extract_numerical_character_count(text: Text) -> int:
-    return len([token for token in text.split() if token.isdigit()])
+    def _extract_token_count(self, text: Text) -> Dict:
+        return {'token_count': len(text.split())}
 
-def extract_upper_token_count(text: Text) -> int:
-    return len([token for token in text.split() if token.isupper()])
+    def _extract_string_length(self, text: Text, exclude_whitespace=True) -> Dict:
+        if exclude_whitespace == True:
+            return {'string_length': len(''.join(text.split()))}
+        else:
+            return {'string_length': len(text)}
 
-def _download_embeddings(embeddings_path="../embeddings"):
-    if len(os.listdir(embeddings_path)) == 0:
-        with urlopen('http://nlp.stanford.edu/data/glove.6B.zip') as url:
-            with ZipFile(BytesIO(url.read())) as zfile:
-                zfile.extractall(embeddings_path)
+    def _extract_average_token_size(self, text: Text) -> Dict:
+      tokens = text.split()
+      return {'average_token_size': sum(len(token) for token in tokens)/len(tokens)}
 
-def _create_word2vec_files(embeddings_path="../embeddings"):
-    embeddings_files = os.listdir(embeddings_path)
-    w2v_files = os.listdir('../word2vec')
-    if len(w2v_files) == 0 and len(embeddings_files) > 0:
-        for emb_file in embeddings_files:
-            glove2word2vec(f'{embeddings_path}/{emb_file}', f'./word2vec/{emb_file}.word2vec')
+    def _extract_stop_word_count(self, text: Text) -> Dict:
+        # nltk.download('stopwords')
+        return {'stop_word_count': len([token for token in text.split() if token in stopwords.words('english')])}
 
-def extract_word_vectors(text: Text, vector_dim=100) -> np.ndarray:
-    w2v_file = f'word2vec/glove.6B.{vector_dim}d.txt.word2vec'
-    if w2v_file not in os.listdir('../word2vec'):
-        _download_embeddings()
-        _create_word2vec_files()
+    def _extract_numerical_token_count(self, text: Text) -> Dict:
+        return {'numerical_token_count': len([token for token in text.split() if token.isdigit()])}
 
-    model = KeyedVectors.load_word2vec_format(w2v_file, binary=False)
-    vectors = []
-    for token in text.split():
-        vectors.append(model[token])
-    return sum(vectors)/len(vectors)
+    def _extract_upper_token_count(self, text: Text) -> Dict:
+        return {'upper_token_count': len([token for token in text.split() if token.isupper()])}
 
-def extract_readability_scores(text: Text, scores=None) -> Dict:
+    def _extract_readability_scores(self, text: Text, scores=None) -> Dict:
 
-    output = {}
-    if 'flesch_reading_ease' in scores or scores == None:
-        output['flesch_reading_ease'] = textstat.flesch_reading_ease(text)
-    if 'smog_index' in scores or scores == None:
-        output['smog_index'] = textstat.smog_index(text)
-    if 'flesch_kincaid_grade' in scores or scores == None:
-        output['flesch_kincaid_grade'] = textstat.flesch_kincaid_grade(text)
-    if 'coleman_liau_index' in scores or scores == None:
-        output['coleman_liau_index'] = textstat.coleman_liau_index(text)
-    if 'automated_readability_index' in scores or scores == None:
-        output['automated_readability_index'] = textstat.automated_readability_index(text)
-    if 'dale_chall_readability_score' in scores or scores == None:
-        output['dale_chall_readability_score'] = textstat.dale_chall_readability_score(text)
-    if 'difficult_words' in scores or scores == None:
-        output['difficult_words'] = textstat.difficult_words(text)
-    if 'linsear_write_formula' in scores or scores == None:
-        output['linsear_write_formula'] = textstat.linsear_write_formula(text)
-    if 'gunning_fog' in scores or scores == None:
-        output['gunning_fog'] = textstat.gunning_fog(text)
-    if 'text_standard' in scores or scores == None:
-        output['text_standard'] = textstat.text_standard(text, float_output=True)
+        output = {}
+        if scores == None or 'flesch_reading_ease' in scores:
+            output['flesch_reading_ease'] = textstat.flesch_reading_ease(text)
+        if scores == None or 'smog_index' in scores:
+            output['smog_index'] = textstat.smog_index(text)
+        if scores == None or 'flesch_kincaid_grade' in scores:
+            output['flesch_kincaid_grade'] = textstat.flesch_kincaid_grade(text)
+        if scores == None or 'coleman_liau_index' in scores:
+            output['coleman_liau_index'] = textstat.coleman_liau_index(text)
+        if scores == None or 'automated_readability_index' in scores:
+            output['automated_readability_index'] = textstat.automated_readability_index(text)
+        if scores == None or 'dale_chall_readability_score' in scores:
+            output['dale_chall_readability_score'] = textstat.dale_chall_readability_score(text)
+        if scores == None or 'difficult_words' in scores:
+            output['difficult_words'] = textstat.difficult_words(text)
+        if scores == None or 'linsear_write_formula' in scores:
+            output['linsear_write_formula'] = textstat.linsear_write_formula(text)
+        if scores == None or 'gunning_fog' in scores:
+            output['gunning_fog'] = textstat.gunning_fog(text)
+        if scores == None or 'text_standard' in scores:
+            output['text_standard'] = textstat.text_standard(text, float_output=True)
 
-    return output
+        return output
 
-def extract_language(text: Text, output_probabilities=False):
-    if output_probabilities == False:
-        return detect(text)
-    else:
-        return {f'lang_{item.lang}': item.prob for item in detect_langs(text)}
+    def _extract_language(self, text: Text, output_probabilities=True) -> Dict:
+        if output_probabilities == False:
+            return {'lang': detect(text)}
+        else:
+            return {f'lang_{item.lang}': item.prob for item in detect_langs(text)}
 
+    def transform(self, text):
 
+        self.output = []
+
+        if type(text) == str:
+            self.text = [text]
+        else:
+            self.text = text
+
+        for item in self.text:
+            output = {}
+
+            if self.extract_token_count == True:
+                output = {**output, **self._extract_token_count(item)}
+
+            if self.extract_string_length == True:
+                output = {**output, **self._extract_string_length(item)}
+
+            if self.extract_average_token_size == True:
+                output = {**output, **self._extract_average_token_size(item)}
+
+            if self.extract_stop_word_count == True:
+                output = {**output, **self._extract_stop_word_count(item)}
+
+            if self.extract_numerical_token_count == True:
+                output = {**output, **self._extract_numerical_token_count(item)}
+
+            if self.extract_upper_token_count == True:
+                output = {**output, **self._extract_upper_token_count(item)}
+
+            if self.extract_readability_scores == True:
+                output = {**output, **self._extract_readability_scores(item)}
+
+            if self.extract_language == True:
+                output = {**output, **self._extract_language(item)}
+
+            self.output.append(output)
+
+        return self.output
 
 
 # extract people / count names
@@ -97,3 +130,27 @@ def extract_language(text: Text, output_probabilities=False):
 # easy data augmentation / generate augmentations
 
 
+    # def _download_embeddings(embeddings_path="../embeddings"):
+    #     if len(os.listdir(embeddings_path)) == 0:
+    #         with urlopen('http://nlp.stanford.edu/data/glove.6B.zip') as url:
+    #             with ZipFile(BytesIO(url.read())) as zfile:
+    #                 zfile.extractall(embeddings_path)
+    #
+    # def _create_word2vec_files(embeddings_path="../embeddings"):
+    #     embeddings_files = os.listdir(embeddings_path)
+    #     w2v_files = os.listdir('../resources')
+    #     if len(w2v_files) == 0 and len(embeddings_files) > 0:
+    #         for emb_file in embeddings_files:
+    #             glove2word2vec(f'{embeddings_path}/{emb_file}', f'./resources/{emb_file}.resources')
+    #
+    # def extract_word_vectors(text: Text, vector_dim=100) -> np.ndarray:
+    #     w2v_file = f'resources/glove.6B.{vector_dim}d.txt.resources'
+    #     if w2v_file not in os.listdir('../resources'):
+    #         _download_embeddings()
+    #         _create_word2vec_files()
+    #
+    #     model = KeyedVectors.load_word2vec_format(w2v_file, binary=False)
+    #     vectors = []
+    #     for token in text.split():
+    #         vectors.append(model[token])
+    #     return sum(vectors)/len(vectors)
