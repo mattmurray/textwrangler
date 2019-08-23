@@ -10,24 +10,27 @@ from gensim.scripts.glove2word2vec import glove2word2vec
 from gensim.models import KeyedVectors
 import textstat
 from langdetect import detect, detect_langs
+from textblob import TextBlob
 
+class FeatureExtraction:
 
-class TextWranglerExtract:
-
-    def __init__(self, extract_token_count=True, extract_string_length=True, extract_average_token_size=True,
-                 extract_stop_word_count=True, extract_numerical_token_count=True, extract_upper_token_count=True,
-                 extract_readability_scores=True, extract_language=True):
+    def __init__(self, token_count=True, string_length=True, average_token_size=True,
+                 stop_word_count=True, numerical_token_count=True, upper_token_count=True,
+                 readability_scores=True, language=True, polarity=True, subjectivity=True, title_token_count=True):
 
         self.output = []
         self.text = None
-        self.extract_token_count = extract_token_count
-        self.extract_string_length = extract_string_length
-        self.extract_average_token_size = extract_average_token_size
-        self.extract_stop_word_count = extract_stop_word_count
-        self.extract_numerical_token_count = extract_numerical_token_count
-        self.extract_upper_token_count = extract_upper_token_count
-        self.extract_readability_scores = extract_readability_scores
-        self.extract_language = extract_language
+        self.token_count = token_count
+        self.string_length = string_length
+        self.average_token_size = average_token_size
+        self.stop_word_count = stop_word_count
+        self.numerical_token_count = numerical_token_count
+        self.upper_token_count = upper_token_count
+        self.readability_scores = readability_scores
+        self.language = language
+        self.polarity = polarity
+        self.subjectivity = subjectivity
+        self.title_token_count = title_token_count
 
     def _extract_token_count(self, text: Text) -> Dict:
         return {'token_count': len(text.split())}
@@ -52,27 +55,45 @@ class TextWranglerExtract:
     def _extract_upper_token_count(self, text: Text) -> Dict:
         return {'upper_token_count': len([token for token in text.split() if token.isupper()])}
 
+    def _extract_title_token_count(self, text: Text) -> Dict:
+        return {'title_token_count': len([token for token in text.split() if token.istitle()])}
+
+    def _extract_polarity(self, text: Text) -> Dict:
+        return {'polarity': TextBlob(text).sentiment.polarity}
+
+    def _extract_subjectivity(self, text: Text) -> Dict:
+        return {'subjectivity': TextBlob(text).sentiment.subjectivity}
+
     def _extract_readability_scores(self, text: Text, scores=None) -> Dict:
 
         output = {}
         if scores == None or 'flesch_reading_ease' in scores:
             output['flesch_reading_ease'] = textstat.flesch_reading_ease(text)
+
         if scores == None or 'smog_index' in scores:
             output['smog_index'] = textstat.smog_index(text)
+
         if scores == None or 'flesch_kincaid_grade' in scores:
             output['flesch_kincaid_grade'] = textstat.flesch_kincaid_grade(text)
+
         if scores == None or 'coleman_liau_index' in scores:
             output['coleman_liau_index'] = textstat.coleman_liau_index(text)
+
         if scores == None or 'automated_readability_index' in scores:
             output['automated_readability_index'] = textstat.automated_readability_index(text)
+
         if scores == None or 'dale_chall_readability_score' in scores:
             output['dale_chall_readability_score'] = textstat.dale_chall_readability_score(text)
+
         if scores == None or 'difficult_words' in scores:
             output['difficult_words'] = textstat.difficult_words(text)
+
         if scores == None or 'linsear_write_formula' in scores:
             output['linsear_write_formula'] = textstat.linsear_write_formula(text)
+
         if scores == None or 'gunning_fog' in scores:
             output['gunning_fog'] = textstat.gunning_fog(text)
+
         if scores == None or 'text_standard' in scores:
             output['text_standard'] = textstat.text_standard(text, float_output=True)
 
@@ -96,29 +117,38 @@ class TextWranglerExtract:
         for item in self.text:
             output = {}
 
-            if self.extract_token_count == True:
+            if self.token_count == True:
                 output = {**output, **self._extract_token_count(item)}
 
-            if self.extract_string_length == True:
+            if self.string_length == True:
                 output = {**output, **self._extract_string_length(item)}
 
-            if self.extract_average_token_size == True:
+            if self.average_token_size == True:
                 output = {**output, **self._extract_average_token_size(item)}
 
-            if self.extract_stop_word_count == True:
+            if self.stop_word_count == True:
                 output = {**output, **self._extract_stop_word_count(item)}
 
-            if self.extract_numerical_token_count == True:
+            if self.numerical_token_count == True:
                 output = {**output, **self._extract_numerical_token_count(item)}
 
-            if self.extract_upper_token_count == True:
+            if self.upper_token_count == True:
                 output = {**output, **self._extract_upper_token_count(item)}
 
-            if self.extract_readability_scores == True:
+            if self.title_token_count == True:
+                output = {**output, **self._extract_title_token_count(item)}
+
+            if self.readability_scores == True:
                 output = {**output, **self._extract_readability_scores(item)}
 
-            if self.extract_language == True:
+            if self.language == True:
                 output = {**output, **self._extract_language(item)}
+
+            if self.polarity == True:
+                output = {**output, **self._extract_polarity(item)}
+
+            if self.subjectivity == True:
+                output = {**output, **self._extract_subjectivity(item)}
 
             self.output.append(output)
 
