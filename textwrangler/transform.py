@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-from textwrangler.normalize import TextNormalization
-from textwrangler.remove import TextRemoval
+from textwrangler.normalize import TextNormalize
+from textwrangler.remove import TextRemove
 from collections import Counter
 
-class TextTransform(TextRemoval, TextNormalization):
+class TextTransform(TextRemove, TextNormalize):
 
     def _unique_preserving_order(self, seq):
         '''

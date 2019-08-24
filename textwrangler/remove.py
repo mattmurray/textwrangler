@@ -4,7 +4,7 @@ from typing import Text
 from bs4 import BeautifulSoup
 from nltk.corpus import stopwords
 
-class TextRemoval:
+class TextRemove:
 
     def __init__(self, punctuation=True, accents=True, numbers=False, html=False, stop_words=False):
 

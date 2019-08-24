@@ -12,7 +12,7 @@ import textstat
 from langdetect import detect, detect_langs
 from textblob import TextBlob
 
-class TextExtraction:
+class TextExtract:
 
     def __init__(self, token_count=True, string_length=True, average_token_size=True,
                  stop_word_count=True, numerical_token_count=True, upper_token_count=True,

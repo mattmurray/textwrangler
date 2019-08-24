@@ -8,7 +8,7 @@ from .patterns import (
     QUOTE_TRANSLATION_TABLE
 )
 
-class TextNormalization:
+class TextNormalize:
 
     def __init__(self, case=True, spelling=False, hyphenated_words=True, quotation_marks=True, unicode=True,
                  whitespace=True):
