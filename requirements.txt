@@ -11,3 +11,4 @@ numpy
 textstat
 langdetect
 tqdm
+scikit-learn
