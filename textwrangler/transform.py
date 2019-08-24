@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
-from textwrangler.normalize import TextNormalize
-from textwrangler.remove import TextRemove
+from textwrangler.normalize import TextNormalizer
+from textwrangler.remove import TextRemover
 from collections import Counter
+from sklearn.base import TransformerMixin
 
-class FingerPrintTransform(TextRemove, TextNormalize):
+class FingerPrintTransformer(TextRemover, TextNormalizer, TransformerMixin):
 
-    def __init__(self, n_gram=None):
+    def __init__(self, n_gram=None, return_fingerprints=False):
         self.n_gram = n_gram
+        self.return_fingerprints = return_fingerprints
 
     def _unique_preserving_order(self, seq):
         '''
@@ -23,7 +25,7 @@ class FingerPrintTransform(TextRemove, TextNormalize):
     def _get_ngram_fingerprint(self, text, n):
         return self._accents(''.join(self._unique_preserving_order(sorted([text[i:i + n] for i in range(len(text) - n + 1)]))).strip())
 
-    def get_fingerprints(self, text):
+    def _get_fingerprints(self, text):
         if type(text) == str:
             output_text = [text]
         else:
@@ -44,12 +46,14 @@ class FingerPrintTransform(TextRemove, TextNormalize):
 
         return output
 
-    def transform(self, text, return_fingerprints=True):
+    def fit(self, text, y=None):
+        return self
 
-        if return_fingerprints == True:
-            return self.get_fingerprints(text)
+    def transform(self, text, y=None):
+        if self.return_fingerprints == True:
+            return self._get_fingerprints(text)
         else:
-            fingerprint_tuples = list(zip(text, self.get_fingerprints(text)))
+            fingerprint_tuples = list(zip(text, self._get_fingerprints(text)))
 
             # group original text into fingerprints
             fingerprint_groups = {}

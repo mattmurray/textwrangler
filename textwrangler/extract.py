@@ -11,8 +11,9 @@ from gensim.models import KeyedVectors
 import textstat
 from langdetect import detect, detect_langs
 from textblob import TextBlob
+from sklearn.base import TransformerMixin
 
-class TextExtract:
+class TextFeatureExtractor(TransformerMixin):
 
     def __init__(self, token_count=True, string_length=True, average_token_size=True,
                  stop_word_count=True, numerical_token_count=True, upper_token_count=True,
@@ -105,7 +106,10 @@ class TextExtract:
         else:
             return {f'lang_{item.lang}': item.prob for item in detect_langs(text)}
 
-    def transform(self, text):
+    def fit(self, X, y=None):
+        return self
+
+    def transform(self, text, y=None):
 
         self.output = []
 

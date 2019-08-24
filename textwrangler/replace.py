@@ -2,6 +2,7 @@ from typing import Text
 import contractions
 import inflect
 import nltk
+from sklearn.base import TransformerMixin
 from .patterns import (
     RE_CURRENCY_SYMBOL,
     RE_EMAIL,
@@ -15,7 +16,7 @@ from .patterns import (
 
 nltk.download('punkt')
 
-class TextReplace:
+class TextReplacer(TransformerMixin):
 
     def __init__(self, contractions=False, currency_symbols=True, emails=False, numbers=False, hashtags=False,
                  phone_numbers=False, urls=False, user_handles=False, numbers_with_text_repr=False):
@@ -59,7 +60,10 @@ class TextReplace:
         p = inflect.engine()
         return ' '.join([(p.number_to_words(token) if token.isdigit() else token) for token in nltk.word_tokenize(text)])
 
-    def transform(self, text: Text):
+    def fit(self, X, y=None):
+        return self
+
+    def transform(self, text, y=None):
 
         if type(text) == str:
             self.text = [text]

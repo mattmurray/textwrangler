@@ -3,8 +3,9 @@ import unidecode
 from typing import Text
 from bs4 import BeautifulSoup
 from nltk.corpus import stopwords
+from sklearn.base import TransformerMixin
 
-class TextRemove:
+class TextRemover(TransformerMixin):
 
     def __init__(self, punctuation=True, accents=True, numbers=False, html=False, stop_words=False):
 
@@ -30,7 +31,10 @@ class TextRemove:
     def _stop_words(self, text: Text) -> Text:
         return ' '.join(token for token in text.split() if token not in stopwords.words('english'))
 
-    def transform(self, text):
+    def fit(self, X, y=None):
+        return self
+
+    def transform(self, text, y=None):
 
         if type(text) == str:
             self.text = [text]

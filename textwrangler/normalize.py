@@ -7,8 +7,9 @@ from .patterns import (
     RE_HYPHENATED_WORD,
     QUOTE_TRANSLATION_TABLE
 )
+from sklearn.base import TransformerMixin
 
-class TextNormalize:
+class TextNormalizer(TransformerMixin):
 
     def __init__(self, case=True, spelling=False, hyphenated_words=True, quotation_marks=True, unicode=True,
                  whitespace=True):
@@ -40,7 +41,10 @@ class TextNormalize:
     def _normalize_whitespace(self, text: Text) -> Text:
         return RE_NONBREAKING_SPACE.sub(" ", RE_LINEBREAK.sub(r"\n", text)).strip()
 
-    def transform(self, text):
+    def fit(self, X, y=None):
+        return self
+
+    def transform(self, text, y=None):
 
         if type(text) == str:
             self.text = [text]
