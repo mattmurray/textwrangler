@@ -3,7 +3,10 @@ from textwrangler.normalize import TextNormalize
 from textwrangler.remove import TextRemove
 from collections import Counter
 
-class TextTransform(TextRemove, TextNormalize):
+class FingerPrintTransform(TextRemove, TextNormalize):
+
+    def __init__(self, n_gram=None):
+        self.n_gram = n_gram
 
     def _unique_preserving_order(self, seq):
         '''
@@ -15,10 +18,10 @@ class TextTransform(TextRemove, TextNormalize):
         return [x for x in seq if not (x in seen or seen_add(x))]
 
     def _get_fingerprint(self, text):
-        '''
-        Gets conventional fingerpint.
-        '''
         return self._accents(' '.join(self._unique_preserving_order(sorted(text.split()))))
+
+    def _get_ngram_fingerprint(self, text, n):
+        return self._accents(''.join(self._unique_preserving_order(sorted([text[i:i + n] for i in range(len(text) - n + 1)]))).strip())
 
     def get_fingerprints(self, text):
         if type(text) == str:
@@ -33,7 +36,10 @@ class TextTransform(TextRemove, TextNormalize):
             item = self._normalize_unicode(item)
             item = self._normalize_quotation_marks(item)
             item = self._punctuation(item)  # remove punctuation
-            item = self._get_fingerprint(item)
+            if self.n_gram == None:
+                item = self._get_fingerprint(item)
+            else:
+                item = self._get_ngram_fingerprint(item, self.n_gram)
             output.append(item)
 
         return output
@@ -61,12 +67,4 @@ class TextTransform(TextRemove, TextNormalize):
             # transform the original strings into the most common string for each fingerprint group
             return [fingerprint_most_common[tup[1]] for tup in fingerprint_tuples]
 
-
-
-    def get_ngram_fingerprint(self, text, n=1):
-        '''
-        Gets ngram fingerpint based on n-length shingles of the string.
-        Default is 1.
-        '''
-        return self._accents(''.join(self._unique_preserving_order(sorted([self.text[i:i + n] for i in range(len(text) - n + 1)]))))
 
