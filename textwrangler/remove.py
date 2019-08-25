@@ -4,12 +4,13 @@ from typing import Text
 from bs4 import BeautifulSoup
 from nltk.corpus import stopwords
 from sklearn.base import TransformerMixin
+import unicodedata
+from textwrangler import TextNormalizer
 
-class TextRemover(TransformerMixin):
+class TextRemover(TextNormalizer, TransformerMixin):
 
     def __init__(self, punctuation=True, accents=True, numbers=False, html=False, stop_words=False):
 
-        self.output = []
         self.punctuation = punctuation
         self.accents = accents
         self.numbers = numbers
@@ -17,10 +18,11 @@ class TextRemover(TransformerMixin):
         self.stop_words = stop_words
 
     def _punctuation(self, text: Text) -> Text:
-        return text.translate(str.maketrans({a: None for a in string.punctuation}))
+        return text.translate(str.maketrans({a: ' ' for a in string.punctuation}))
 
     def _accents(self, text: Text) -> Text:
-        return unidecode.unidecode(text)
+        # return unidecode.unidecode(text)
+        return unicodedata.normalize('NFD', text).encode('ascii', 'ignore').decode("utf-8")
 
     def _numbers(self, text: Text) -> Text:
         return text.translate({ord(k): None for k in string.digits})
@@ -36,12 +38,12 @@ class TextRemover(TransformerMixin):
 
     def transform(self, text, y=None):
 
-        if type(text) == str:
-            self.text = [text]
-        else:
-            self.text = text
+        output = []
 
-        for item in self.text:
+        if type(text) == str:
+            text = [text]
+
+        for item in text:
             output_text = item
 
             if self.punctuation == True:
@@ -59,6 +61,8 @@ class TextRemover(TransformerMixin):
             if self.stop_words == True:
                 output_text = self._stop_words(output_text)
 
-            self.output.append(output_text)
+            output_text = self._normalize_whitespace(output_text)
 
-        return self.output
+            output.append(output_text)
+
+        return output
