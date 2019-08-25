@@ -3,6 +3,10 @@ from textwrangler.normalize import TextNormalizer
 from textwrangler.remove import TextRemover
 from collections import Counter
 from sklearn.base import TransformerMixin
+from sklearn.feature_extraction.text import TfidfVectorizer
+from gensim.models import KeyedVectors
+import nltk
+import numpy as np
 
 class FingerPrintTransformer(TextRemover, TextNormalizer, TransformerMixin):
 
@@ -72,3 +76,72 @@ class FingerPrintTransformer(TextRemover, TextNormalizer, TransformerMixin):
             return [fingerprint_most_common[tup[1]] for tup in fingerprint_tuples]
 
 
+class VectorTransformer:
+
+    def __init__(self, w2v_path, weighting='tfidf'):
+        self.w2v_path = w2v_path
+        self.vocab = None
+        self.oov = None
+        self.vectors = None
+        self.tfidf = None
+        self.weighting = weighting
+
+    def __load_w2v(self, w2v_filepath, binary=False):
+        return KeyedVectors.load_word2vec_format(w2v_filepath, binary=binary)
+
+    def __create_vocab(self, text_list):
+        word_counter = Counter()
+        for s in text_list:
+            word_counter.update(nltk.word_tokenize(s))
+        self.vocab = word_counter
+
+    def __check_coverage(self, vocab, model):
+        known_words = {}
+        unknown_words = {}
+        known_word_count = 0
+        unknown_word_count = 0
+
+        for word in vocab.keys():
+            try:
+                known_words[word] = model[word]
+                known_word_count += vocab[word]
+            except:
+                unknown_words[word] = vocab[word]
+                unknown_word_count += vocab[word]
+                pass
+
+        print('Found embeddings for {:.2%} of vocab'.format(len(known_words) / len(vocab)))
+        print('Found embeddings for {:.2%} of all text'.format(
+            known_word_count / (known_word_count + unknown_word_count)))
+
+        return known_words, unknown_words
+
+    def __get_embedding(self, feature, model):
+        try:
+            return model[feature]
+        except:
+            return np.zeros(300, )
+
+    def __get_document_vectors(self, text, vectors):
+        if self.weighting == 'tfidf':
+            tfidf_vecs = self.tfidf.transform(text)
+            tfidf_vectors = tfidf_vecs.todense()
+            vocab_embeddings = np.vstack(
+                ([self.__get_embedding(feature, vectors) for feature in self.tfidf.get_feature_names()]))
+            document_vectors = np.dot(tfidf_vectors, vocab_embeddings)
+            return document_vectors
+
+    def fit(self, text):
+
+        self.tfidf = TfidfVectorizer(lowercase=False)
+        self.tfidf.fit(text)
+
+        self.__create_vocab(text)
+        known_words, unknown_words = self.__check_coverage(self.vocab, self.__load_w2v(self.w2v_path))
+        self.oov = unknown_words
+        self.vectors = known_words
+
+        return self
+
+    def transform(self, text):
+        return self.__get_document_vectors(text, self.vectors)
