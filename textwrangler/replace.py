@@ -14,14 +14,13 @@ from .patterns import (
     RE_USER_HANDLE
 )
 
-nltk.download('punkt')
+# nltk.download('punkt')
 
 class TextReplacer(TransformerMixin):
 
     def __init__(self, contractions=False, currency_symbols=True, emails=False, numbers=False, hashtags=False,
                  phone_numbers=False, urls=False, user_handles=False, numbers_with_text_repr=False):
 
-        self.output = []
         self.contractions = contractions
         self.currency_symbols = currency_symbols
         self.emails = emails
@@ -35,25 +34,25 @@ class TextReplacer(TransformerMixin):
     def _contractions(self, text: Text) -> Text:
         return contractions.fix(text)
 
-    def _currency_symbols(self, text: Text, replace_with="_CUR_") -> Text:
+    def _currency_symbols(self, text: Text, replace_with=" _CUR_ ") -> Text:
         return RE_CURRENCY_SYMBOL.sub(replace_with, text)
 
-    def _emails(self, text: Text, replace_with="_EMAIL_") -> Text:
+    def _emails(self, text: Text, replace_with=" _EMAIL_ ") -> Text:
         return RE_EMAIL.sub(replace_with, text)
 
-    def _numbers(self, text: Text, replace_with="_NUMBER_") -> Text:
+    def _numbers(self, text: Text, replace_with=" _NUMBER_ ") -> Text:
         return RE_NUMBER.sub(replace_with, text)
 
-    def _hashtags(self, text: Text, replace_with="_TAG_") -> Text:
+    def _hashtags(self, text: Text, replace_with=" _TAG_ ") -> Text:
         return RE_HASHTAG.sub(replace_with, text)
 
-    def _phone_numbers(self, text: Text, replace_with="_PHONE_") -> Text:
+    def _phone_numbers(self, text: Text, replace_with=" _PHONE_ ") -> Text:
         return RE_PHONE_NUMBER.sub(replace_with, text)
 
-    def _urls(self, text: Text, replace_with="_URL_") -> Text:
+    def _urls(self, text: Text, replace_with=" _URL_ ") -> Text:
         return RE_URL.sub(replace_with, RE_SHORT_URL.sub(replace_with, text))
 
-    def _user_handles(self, text: Text, replace_with="_USER_") -> Text:
+    def _user_handles(self, text: Text, replace_with=" _USER_ ") -> Text:
         return RE_USER_HANDLE.sub(replace_with, text)
 
     def _numbers_with_text_repr(self, text: Text) -> Text:
@@ -65,12 +64,12 @@ class TextReplacer(TransformerMixin):
 
     def transform(self, text, y=None):
 
-        if type(text) == str:
-            self.text = [text]
-        else:
-            self.text = text
+        output = []
 
-        for item in self.text:
+        if type(text) == str:
+            text = [text]
+
+        for item in text:
             output_text = item
 
             if self.contractions == True:
@@ -100,6 +99,6 @@ class TextReplacer(TransformerMixin):
             if self.numbers_with_text_repr == True:
                 output_text = self._numbers_with_text_repr(output_text)
 
-            self.output.append(output_text)
+            output.append(output_text)
 
-        return self.output
+        return output
