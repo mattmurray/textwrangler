@@ -9,18 +9,22 @@ from io import BytesIO
 from gensim.scripts.glove2word2vec import glove2word2vec
 from gensim.models import KeyedVectors
 import textstat
+import string
 from langdetect import detect, detect_langs
 from textblob import TextBlob
 from sklearn.base import TransformerMixin
+from better_profanity import profanity
 
 class TextFeatureExtractor(TransformerMixin):
 
     def __init__(self, token_count=True, string_length=True, average_token_size=True,
                  stop_word_count=True, numerical_token_count=True, upper_token_count=True,
-                 readability_scores=True, language=True, polarity=True, subjectivity=True, title_token_count=True):
+                 readability_scores=True, language=True, polarity=True, subjectivity=True, title_token_count=True,
+                 unique_token_proportion=True, number_of_unique_tokens=True, question_mark_count=True,
+                 exclamation_mark_count=True, title_token_proportion=True, upper_token_proportion=True,
+                 numerical_token_proportion=True, stop_word_proportion=True, punctuation_character_count=True,
+                 punctuation_proportion=True, contains_profanity=True):
 
-        self.output = []
-        self.text = None
         self.token_count = token_count
         self.string_length = string_length
         self.average_token_size = average_token_size
@@ -32,9 +36,26 @@ class TextFeatureExtractor(TransformerMixin):
         self.polarity = polarity
         self.subjectivity = subjectivity
         self.title_token_count = title_token_count
+        self.exclamation_mark_count = exclamation_mark_count
+        self.question_mark_count = question_mark_count
+        self.number_of_unique_tokens = number_of_unique_tokens
+        self.unique_token_proportion = unique_token_proportion
+        self.stop_word_proportion = stop_word_proportion
+        self.numerical_token_proportion = numerical_token_proportion
+        self.title_token_proportion = title_token_proportion
+        self.upper_token_proportion = upper_token_proportion
+        self.punctuation_character_count = punctuation_character_count
+        self.punctuation_proportion = punctuation_proportion
+        self.contains_profanity = contains_profanity
+
+    def _extract_profanity_check(self, text: Text) -> Dict:
+        return {'contains_profanity': int(profanity.contains_profanity(text))}
 
     def _extract_token_count(self, text: Text) -> Dict:
         return {'token_count': len(text.split())}
+
+    def _extract_punctuation_character_count(self, text: Text) -> Dict:
+        return {'punctuation_character_count': len([c for c in text if c in string.punctuation])}
 
     def _extract_string_length(self, text: Text, exclude_whitespace=True) -> Dict:
         if exclude_whitespace == True:
@@ -56,6 +77,20 @@ class TextFeatureExtractor(TransformerMixin):
     def _extract_upper_token_count(self, text: Text) -> Dict:
         return {'upper_token_count': len([token for token in text.split() if token.isupper()])}
 
+    def _extract_exclamation_mark_count(self, text: Text) -> Dict:
+        return {'exclamation_mark_count': text.count('!')}
+
+    def _extract_question_mark_count(self, text: Text) -> Dict:
+        return {'question_mark_count': text.count('?')}
+
+    def _extract_number_of_unique_tokens(self, text: Text) -> Dict:
+        return {'number_of_unique_tokens': len(set(w for w in text.split()))}
+
+    def _extract_unique_token_proportion(self, text: Text) -> Dict:
+        number_of_unique_tokens = self._extract_number_of_unique_tokens(text)['number_of_unique_tokens']
+        token_count = self._extract_token_count(text)['token_count']
+        return {'unique_token_proportion': float(number_of_unique_tokens/token_count)}
+
     def _extract_title_token_count(self, text: Text) -> Dict:
         return {'title_token_count': len([token for token in text.split() if token.istitle()])}
 
@@ -64,6 +99,34 @@ class TextFeatureExtractor(TransformerMixin):
 
     def _extract_subjectivity(self, text: Text) -> Dict:
         return {'subjectivity': TextBlob(text).sentiment.subjectivity}
+
+    def _extract_stop_word_proportion(self, text: Text) -> Dict:
+        token_count = self._extract_token_count(text)['token_count']
+        stop_word_count = self._extract_stop_word_count(text)['stop_word_count']
+        return {'stop_word_proportion': float(stop_word_count/token_count)}
+
+    def _extract_numerical_token_proportion(self, text: Text) -> Dict:
+        token_count = self._extract_token_count(text)['token_count']
+        numerical_token_count = self._extract_numerical_token_count(text)['numerical_token_count']
+        return {'numerical_token_proportion': float(numerical_token_count/token_count)}
+
+    def _extract_upper_token_proportion(self, text: Text) -> Dict:
+        token_count = self._extract_token_count(text)['token_count']
+        upper_token_count = self._extract_upper_token_count(text)['upper_token_count']
+        return {'upper_token_proportion': float(upper_token_count/token_count)}
+
+    def _extract_title_token_proportion(self, text: Text) -> Dict:
+        token_count = self._extract_token_count(text)['token_count']
+        title_token_count = self._extract_title_token_count(text)['title_token_count']
+        return {'title_token_proportion': float(title_token_count/token_count)}
+
+    def _extract_punctuation_proportion(self, text: Text) -> Dict:
+        string_length = self._extract_string_length(text, exclude_whitespace=True)['string_length']
+        punctuation_character_count = self._extract_punctuation_character_count(text)['punctuation_character_count']
+        return {'punctuation_character_proportion': float(punctuation_character_count/string_length)}
+
+    # def _extract_sentence_count(self, text: Text) -> Dict:
+    #     pass
 
     def _extract_readability_scores(self, text: Text, scores=None) -> Dict:
 
@@ -111,7 +174,7 @@ class TextFeatureExtractor(TransformerMixin):
 
     def transform(self, text, y=None):
 
-        self.output = []
+        output_list = []
 
         if type(text) == str:
             self.text = [text]
@@ -154,9 +217,45 @@ class TextFeatureExtractor(TransformerMixin):
             if self.subjectivity == True:
                 output = {**output, **self._extract_subjectivity(item)}
 
-            self.output.append(output)
+            if self.title_token_count == True:
+                output = {**output, **self._extract_title_token_count(item)}
 
-        return self.output
+            if self.exclamation_mark_count == True:
+                output = {**output, **self._extract_exclamation_mark_count(item)}
+
+            if self.question_mark_count == True:
+                output = {**output, **self._extract_question_mark_count(item)}
+
+            if self.number_of_unique_tokens == True:
+                output = {**output, **self._extract_number_of_unique_tokens(item)}
+
+            if self.unique_token_proportion == True:
+                output = {**output, **self._extract_unique_token_proportion(item)}
+
+            if self.title_token_proportion == True:
+                output = {**output, **self._extract_title_token_proportion(item)}
+
+            if self.upper_token_proportion == True:
+                output = {**output, **self._extract_upper_token_proportion(item)}
+
+            if self.numerical_token_proportion == True:
+                output = {**output, **self._extract_numerical_token_proportion(item)}
+
+            if self.stop_word_proportion == True:
+                output = {**output, **self._extract_stop_word_proportion(item)}
+
+            if self.punctuation_character_count == True:
+                output = {**output, **self._extract_punctuation_character_count(item)}
+
+            if self.punctuation_proportion == True:
+                output = {**output, **self._extract_punctuation_proportion(item)}
+
+            if self.contains_profanity == True:
+                output = {**output, **self._extract_profanity_check(item)}
+
+            output_list.append(output)
+
+        return output_list
 
 
 # extract people / count names
