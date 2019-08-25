@@ -12,3 +12,4 @@ textstat
 langdetect
 tqdm
 scikit-learn
+better_profanity
