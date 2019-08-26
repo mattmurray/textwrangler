@@ -3,7 +3,7 @@ from textwrangler.normalize import TextNormalizer
 from textwrangler.remove import TextRemover
 from collections import Counter
 from sklearn.base import TransformerMixin
-from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
 from gensim.models import KeyedVectors
 import nltk
 import numpy as np
@@ -76,14 +76,14 @@ class FingerPrintTransformer(TextRemover, TextNormalizer, TransformerMixin):
             return [fingerprint_most_common[tup[1]] for tup in fingerprint_tuples]
 
 
-class VectorTransformer:
+class VectorTransformer(TransformerMixin):
 
     def __init__(self, w2v_path, weighting='tfidf'):
         self.w2v_path = w2v_path
         self.vocab = None
         self.oov = None
         self.vectors = None
-        self.tfidf = None
+        self.bow_vectorizer = None
         self.weighting = weighting
 
     def __load_w2v(self, w2v_filepath, binary=False):
@@ -123,19 +123,21 @@ class VectorTransformer:
             return np.zeros(300, )
 
     def __get_document_vectors(self, text, vectors):
-        if self.weighting == 'tfidf':
-            tfidf_vecs = self.tfidf.transform(text)
-            tfidf_vectors = tfidf_vecs.todense()
-            vocab_embeddings = np.vstack(
-                ([self.__get_embedding(feature, vectors) for feature in self.tfidf.get_feature_names()]))
-            document_vectors = np.dot(tfidf_vectors, vocab_embeddings)
-            return document_vectors
+        bow_vecs = self.bow_vectorizer.transform(text)
+        bow_vectors = bow_vecs.todense()
+        vocab_embeddings = np.vstack(
+            ([self.__get_embedding(feature, vectors) for feature in self.bow_vectorizer.get_feature_names()]))
+        document_vectors = np.dot(bow_vectors, vocab_embeddings)
+        return document_vectors
+
 
     def fit(self, text):
+        if self.weighting == 'tfidf':
+            self.bow_vectorizer = TfidfVectorizer(lowercase=False)
+        else:
+            self.bow_vectorizer = CountVectorizer(lowercase=False, binary=True)
 
-        self.tfidf = TfidfVectorizer(lowercase=False)
-        self.tfidf.fit(text)
-
+        self.bow_vectorizer.fit(text)
         self.__create_vocab(text)
         known_words, unknown_words = self.__check_coverage(self.vocab, self.__load_w2v(self.w2v_path))
         self.oov = unknown_words
