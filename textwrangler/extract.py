@@ -1,4 +1,5 @@
 from typing import Text, Dict, List
+from tqdm import tqdm
 import nltk
 from nltk.corpus import stopwords
 import numpy as np
@@ -14,17 +15,21 @@ from langdetect import detect, detect_langs
 from textblob import TextBlob
 from sklearn.base import TransformerMixin
 from better_profanity import profanity
+import multiprocessing as mp
+import traceback
+
 
 class TextFeatureExtractor(TransformerMixin):
 
-    def __init__(self, token_count=True, string_length=True, average_token_size=True,
+    def __init__(self, n_jobs=1, token_count=True, string_length=True, average_token_size=True,
                  stop_word_count=True, numerical_token_count=True, upper_token_count=True,
-                 readability_scores=True, language=True, polarity=True, subjectivity=True, title_token_count=True,
+                 readability_scores=True, language=False, polarity=True, subjectivity=True, title_token_count=True,
                  unique_token_proportion=True, number_of_unique_tokens=True, question_mark_count=True,
                  exclamation_mark_count=True, title_token_proportion=True, upper_token_proportion=True,
                  numerical_token_proportion=True, stop_word_proportion=True, punctuation_character_count=True,
                  punctuation_proportion=True, contains_profanity=True):
 
+        self.n_jobs = n_jobs
         self.token_count = token_count
         self.string_length = string_length
         self.average_token_size = average_token_size
@@ -65,7 +70,10 @@ class TextFeatureExtractor(TransformerMixin):
 
     def _extract_average_token_size(self, text: Text) -> Dict:
       tokens = text.split()
-      return {'average_token_size': sum(len(token) for token in tokens)/len(tokens)}
+      if len(tokens) == 0:
+          return {'average_token_size': 0}
+      else:
+          return {'average_token_size': sum(len(token) for token in tokens)/len(tokens)}
 
     def _extract_stop_word_count(self, text: Text) -> Dict:
         # nltk.download('stopwords')
@@ -89,7 +97,10 @@ class TextFeatureExtractor(TransformerMixin):
     def _extract_unique_token_proportion(self, text: Text) -> Dict:
         number_of_unique_tokens = self._extract_number_of_unique_tokens(text)['number_of_unique_tokens']
         token_count = self._extract_token_count(text)['token_count']
-        return {'unique_token_proportion': float(number_of_unique_tokens/token_count)}
+        if number_of_unique_tokens == 0 or token_count == 0:
+            return {'unique_token_proportion': 0}
+        else:
+            return {'unique_token_proportion': float(number_of_unique_tokens / token_count)}
 
     def _extract_title_token_count(self, text: Text) -> Dict:
         return {'title_token_count': len([token for token in text.split() if token.istitle()])}
@@ -103,27 +114,42 @@ class TextFeatureExtractor(TransformerMixin):
     def _extract_stop_word_proportion(self, text: Text) -> Dict:
         token_count = self._extract_token_count(text)['token_count']
         stop_word_count = self._extract_stop_word_count(text)['stop_word_count']
-        return {'stop_word_proportion': float(stop_word_count/token_count)}
+        if stop_word_count == 0 or token_count == 0:
+            return {'stop_word_proportion': 0}
+        else:
+            return {'stop_word_proportion': float(stop_word_count / token_count)}
 
     def _extract_numerical_token_proportion(self, text: Text) -> Dict:
         token_count = self._extract_token_count(text)['token_count']
         numerical_token_count = self._extract_numerical_token_count(text)['numerical_token_count']
-        return {'numerical_token_proportion': float(numerical_token_count/token_count)}
+        if numerical_token_count == 0 or token_count == 0:
+            return {'numerical_token_proportion': 0}
+        else:
+            return {'numerical_token_proportion': float(numerical_token_count / token_count)}
 
     def _extract_upper_token_proportion(self, text: Text) -> Dict:
         token_count = self._extract_token_count(text)['token_count']
         upper_token_count = self._extract_upper_token_count(text)['upper_token_count']
-        return {'upper_token_proportion': float(upper_token_count/token_count)}
+        if upper_token_count == 0 or token_count == 0:
+            return {'upper_token_proportion': 0}
+        else:
+            return {'upper_token_proportion': float(upper_token_count / token_count)}
 
     def _extract_title_token_proportion(self, text: Text) -> Dict:
         token_count = self._extract_token_count(text)['token_count']
         title_token_count = self._extract_title_token_count(text)['title_token_count']
-        return {'title_token_proportion': float(title_token_count/token_count)}
+        if title_token_count == 0 or token_count == 0:
+            return {'title_token_proportion': 0}
+        else:
+            return {'title_token_proportion': float(title_token_count/token_count)}
 
     def _extract_punctuation_proportion(self, text: Text) -> Dict:
         string_length = self._extract_string_length(text, exclude_whitespace=True)['string_length']
         punctuation_character_count = self._extract_punctuation_character_count(text)['punctuation_character_count']
-        return {'punctuation_character_proportion': float(punctuation_character_count/string_length)}
+        if punctuation_character_count == 0 or string_length == 0:
+            return {'punctuation_character_proportion': 0}
+        else:
+            return {'punctuation_character_proportion': float(punctuation_character_count/string_length)}
 
     # def _extract_sentence_count(self, text: Text) -> Dict:
     #     pass
@@ -172,18 +198,11 @@ class TextFeatureExtractor(TransformerMixin):
     def fit(self, X, y=None):
         return self
 
-    def transform(self, text, y=None):
 
-        output_list = []
+    def _process_item(self, item):
 
-        if type(text) == str:
-            self.text = [text]
-        else:
-            self.text = text
-
-        for item in self.text:
+        try:
             output = {}
-
             if self.token_count == True:
                 output = {**output, **self._extract_token_count(item)}
 
@@ -253,37 +272,27 @@ class TextFeatureExtractor(TransformerMixin):
             if self.contains_profanity == True:
                 output = {**output, **self._extract_profanity_check(item)}
 
-            output_list.append(output)
+            return output
 
-        return output_list
+        except Exception as e:
+            print('Caught exception in worker thread (item: \n{}):'.format(item))
+
+            # This prints the type, value, and stack trace of the
+            # current exception being handled.
+            traceback.print_exc()
+            print()
+            raise e
+
+    def transform(self, text, y=None):
+
+        if type(text) == str:
+            text = [text]
+
+        pool = mp.Pool(processes=self.n_jobs)
+        results = [pool.map(self._process_item, text)]
+        return results[0]
 
 
 # extract people / count names
 # emoji count
 # easy data augmentation / generate augmentations
-
-
-    # def _download_embeddings(embeddings_path="../embeddings"):
-    #     if len(os.listdir(embeddings_path)) == 0:
-    #         with urlopen('http://nlp.stanford.edu/data/glove.6B.zip') as url:
-    #             with ZipFile(BytesIO(url.read())) as zfile:
-    #                 zfile.extractall(embeddings_path)
-    #
-    # def _create_word2vec_files(embeddings_path="../embeddings"):
-    #     embeddings_files = os.listdir(embeddings_path)
-    #     w2v_files = os.listdir('../resources')
-    #     if len(w2v_files) == 0 and len(embeddings_files) > 0:
-    #         for emb_file in embeddings_files:
-    #             glove2word2vec(f'{embeddings_path}/{emb_file}', f'./resources/{emb_file}.resources')
-    #
-    # def extract_word_vectors(text: Text, vector_dim=100) -> np.ndarray:
-    #     w2v_file = f'resources/glove.6B.{vector_dim}d.txt.resources'
-    #     if w2v_file not in os.listdir('../resources'):
-    #         _download_embeddings()
-    #         _create_word2vec_files()
-    #
-    #     model = KeyedVectors.load_word2vec_format(w2v_file, binary=False)
-    #     vectors = []
-    #     for token in text.split():
-    #         vectors.append(model[token])
-    #     return sum(vectors)/len(vectors)
