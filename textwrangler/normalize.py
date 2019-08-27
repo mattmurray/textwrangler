@@ -1,10 +1,10 @@
+# -*- coding: utf-8 -*-
 from textblob import TextBlob
 from typing import Text
 import unicodedata
 from .patterns import (
     RE_NONBREAKING_SPACE,
     RE_LINEBREAK,
-    RE_HYPHENATED_WORD,
     QUOTE_TRANSLATION_TABLE
 )
 import re
