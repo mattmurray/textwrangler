@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from typing import Text, Dict, List
 from tqdm import tqdm
 import nltk
@@ -17,7 +18,7 @@ from sklearn.base import TransformerMixin
 from better_profanity import profanity
 import multiprocessing as mp
 import traceback
-
+from gensim.models import Word2Vec
 
 class TextFeatureExtractor(TransformerMixin):
 
@@ -291,6 +292,70 @@ class TextFeatureExtractor(TransformerMixin):
         pool = mp.Pool(processes=self.n_jobs)
         results = [pool.map(self._process_item, text)]
         return results[0]
+
+class TrainWordToVec:
+
+    def __init__(self, size=150, window=10, min_count=2, workers=10, iter=10, skip_gram=0):
+
+        '''
+
+        :param size:
+        The size of the dense vector to represent each token or word (i.e. the context or neighboring words).
+        If you have limited data, then size should be a much smaller value since you would only have so many
+        unique neighbors for a given word. If you have lots of data, it’s good to experiment with various sizes.
+        A value of 100–150 has worked well for me for similarity lookups.
+
+        :param window:
+        The maximum distance between the target word and its neighboring word. If your neighbor’s position is
+        greater than the maximum window width to the left or the right, then, some neighbors would not be considered
+        as being related to the target word. In theory, a smaller window should give you terms that are more related.
+        Again, if your data is not sparse, then the window size should not matter too much, as long as it’s not overly
+        narrow or overly broad. If you are not too sure about this, just use the default value.
+
+        :param min_count:
+        Minimium frequency count of words. The model would ignore words that do not satisfy the min_count. Extremely
+        infrequent words are usually unimportant, so its best to get rid of those. Unless your dataset is really tiny,
+        this does not really affect the model in terms of your final results. The settings here probably has more of
+        an effect on memory usage and storage requirements of the model files.
+
+        :param workers:
+        How many threads to use.
+
+        :param iter:
+        Number of iterations (epochs) over the corpus. 5 is a good starting point. I always use a minimum of 10
+        iterations.
+
+        '''
+        self.size = size
+        self.window = window
+        self.min_count = min_count
+        self.workers = workers
+        self.iter = iter
+        self.skip_gram = skip_gram
+        self.model = None
+
+    def fit(self, documents):
+        self.model = Word2Vec(size=self.size, window=self.window, min_count=self.min_count,
+                         workers=self.workers, iter=self.iter, sg=self.skip_gram)
+
+        self.model.build_vocab(documents)
+        self.model.train(documents, total_examples=self.model.corpus_count, epochs=self.model.iter)
+
+
+    def save_model(self, path):
+        self.model.save(path)
+
+    def save_keyed_vectors(self, path):
+        self.model.wv.save(path)
+
+    def get_most_similar(self, word, top_n=5, positive=True):
+        if self.model is not None:
+            if positive == True:
+                return self.model.wv.most_similar(positive=[word], topn=top_n)
+            else:
+                return self.model.wv.most_similar(negative=[word], topn=top_n)
+        else:
+            return "No trained model."
 
 
 # extract people / count names
