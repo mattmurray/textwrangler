@@ -1,5 +1,5 @@
+# -*- coding: utf-8 -*-
 import string
-import unidecode
 from typing import Text
 from bs4 import BeautifulSoup
 from nltk.corpus import stopwords
