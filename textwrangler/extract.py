@@ -1,15 +1,6 @@
 # -*- coding: utf-8 -*-
-from typing import Text, Dict, List
-from tqdm import tqdm
-import nltk
+from typing import Text, Dict
 from nltk.corpus import stopwords
-import numpy as np
-import os
-from urllib.request import urlopen
-from zipfile import ZipFile
-from io import BytesIO
-from gensim.scripts.glove2word2vec import glove2word2vec
-from gensim.models import KeyedVectors
 import textstat
 import string
 from langdetect import detect, detect_langs
@@ -199,7 +190,6 @@ class TextFeatureExtractor(TransformerMixin):
     def fit(self, X, y=None):
         return self
 
-
     def _process_item(self, item):
 
         try:
@@ -277,15 +267,11 @@ class TextFeatureExtractor(TransformerMixin):
 
         except Exception as e:
             print('Caught exception in worker thread (item: \n{}):'.format(item))
-
-            # This prints the type, value, and stack trace of the
-            # current exception being handled.
             traceback.print_exc()
             print()
             raise e
 
     def transform(self, text, y=None):
-
         if type(text) == str:
             text = [text]
 
@@ -295,7 +281,7 @@ class TextFeatureExtractor(TransformerMixin):
 
 class TrainWordToVec:
 
-    def __init__(self, size=150, window=10, min_count=2, workers=10, iter=10, skip_gram=0):
+    def __init__(self, size=150, window=10, min_count=2, workers=10, epochs=10, skip_gram=0):
 
         '''
 
@@ -321,16 +307,18 @@ class TrainWordToVec:
         :param workers:
         How many threads to use.
 
-        :param iter:
-        Number of iterations (epochs) over the corpus. 5 is a good starting point. I always use a minimum of 10
-        iterations.
+        :param epochs:
+        Number of iterations (epochs) over the corpus. 5 is a good starting point, 10+ iterations better.
+
+        :param skip_gram:
+        Whether to train a continuous bag of words model (0) or a skip-gram model (1).
 
         '''
         self.size = size
         self.window = window
         self.min_count = min_count
         self.workers = workers
-        self.iter = iter
+        self.iter = epochs
         self.skip_gram = skip_gram
         self.model = None
 
@@ -340,7 +328,7 @@ class TrainWordToVec:
 
         self.model.build_vocab(documents)
         self.model.train(documents, total_examples=self.model.corpus_count, epochs=self.model.iter)
-
+        return self
 
     def save_model(self, path):
         self.model.save(path)
@@ -358,6 +346,5 @@ class TrainWordToVec:
             return "No trained model."
 
 
-# extract people / count names
 # emoji count
 # easy data augmentation / generate augmentations
