@@ -14,7 +14,7 @@ class FingerPrintTransformer(TextRemover, TextNormalizer, TransformerMixin):
         self.n_gram = n_gram
         self.return_fingerprints = return_fingerprints
 
-    def _unique_preserving_order(self, seq):
+    def __unique_preserving_order(self, seq):
         '''
         Returns unique tokens in a list, preserving order. Fastest version found in this
         exercise: http://www.peterbe.com/plog/uniqifiers-benchmark
@@ -23,13 +23,13 @@ class FingerPrintTransformer(TextRemover, TextNormalizer, TransformerMixin):
         seen_add = seen.add
         return [x for x in seq if not (x in seen or seen_add(x))]
 
-    def _get_fingerprint(self, text):
-        return self._accents(' '.join(self._unique_preserving_order(sorted(text.split()))))
+    def __get_fingerprint(self, text):
+        return self._accents(' '.join(self.__unique_preserving_order(sorted(text.split()))))
 
-    def _get_ngram_fingerprint(self, text, n):
-        return self._accents(''.join(self._unique_preserving_order(sorted([text[i:i + n] for i in range(len(text) - n + 1)]))).strip())
+    def __get_ngram_fingerprint(self, text, n):
+        return self._accents(''.join(self.__unique_preserving_order(sorted([text[i:i + n] for i in range(len(text) - n + 1)]))).strip())
 
-    def _get_fingerprints(self, text):
+    def __get_fingerprints(self, text):
         if type(text) == str:
             output_text = [text]
         else:
@@ -43,9 +43,9 @@ class FingerPrintTransformer(TextRemover, TextNormalizer, TransformerMixin):
             item = self._normalize_quotation_marks(item)
             item = self._punctuation(item)  # remove punctuation
             if self.n_gram == None:
-                item = self._get_fingerprint(item)
+                item = self.__get_fingerprint(item)
             else:
-                item = self._get_ngram_fingerprint(item, self.n_gram)
+                item = self.__get_ngram_fingerprint(item, self.n_gram)
             output.append(item)
 
         return output
@@ -55,9 +55,9 @@ class FingerPrintTransformer(TextRemover, TextNormalizer, TransformerMixin):
 
     def transform(self, text, y=None):
         if self.return_fingerprints == True:
-            return self._get_fingerprints(text)
+            return self.__get_fingerprints(text)
         else:
-            fingerprint_tuples = list(zip(text, self._get_fingerprints(text)))
+            fingerprint_tuples = list(zip(text, self.__get_fingerprints(text)))
 
             # group original text into fingerprints
             fingerprint_groups = {}
