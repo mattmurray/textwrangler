@@ -15,13 +15,8 @@ class FingerPrintTransformer(TextRemover, TextNormalizer, TransformerMixin):
         self.return_fingerprints = return_fingerprints
 
     def __unique_preserving_order(self, seq):
-        '''
-        Returns unique tokens in a list, preserving order. Fastest version found in this
-        exercise: http://www.peterbe.com/plog/uniqifiers-benchmark
-        '''
-        seen = set()
-        seen_add = seen.add
-        return [x for x in seq if not (x in seen or seen_add(x))]
+        # https://www.peterbe.com/plog/fastest-way-to-uniquify-a-list-in-python-3.6
+        return list(dict.fromkeys(seq))
 
     def __get_fingerprint(self, text):
         return self._accents(' '.join(self.__unique_preserving_order(sorted(text.split()))))
