@@ -2,13 +2,13 @@
 from textwrangler.normalize import TextNormalizer
 from textwrangler.remove import TextRemover
 from collections import Counter
-from sklearn.base import TransformerMixin
+from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
 from gensim.models import KeyedVectors
 import nltk
 import numpy as np
 
-class FingerPrintTransformer(TextRemover, TextNormalizer, TransformerMixin):
+class FingerPrintTransformer(TextRemover, TextNormalizer, BaseEstimator, TransformerMixin):
 
     def __init__(self, n_gram=None, return_fingerprints=False):
         self.n_gram = n_gram
@@ -71,7 +71,7 @@ class FingerPrintTransformer(TextRemover, TextNormalizer, TransformerMixin):
             return [fingerprint_most_common[tup[1]] for tup in fingerprint_tuples]
 
 
-class VectorTransformer(TransformerMixin):
+class VectorTransformer(BaseEstimator, TransformerMixin):
 
     def __init__(self, w2v_path, weighting='tfidf'):
         self.w2v_path = w2v_path
@@ -125,7 +125,6 @@ class VectorTransformer(TransformerMixin):
         document_vectors = np.dot(bow_vectors, vocab_embeddings)
         return document_vectors
 
-
     def fit(self, text):
         if self.weighting == 'tfidf':
             self.bow_vectorizer = TfidfVectorizer(lowercase=False)
@@ -137,7 +136,6 @@ class VectorTransformer(TransformerMixin):
         known_words, unknown_words = self.__check_coverage(self.vocab, self.__load_w2v(self.w2v_path))
         self.oov = unknown_words
         self.vectors = known_words
-
         return self
 
     def transform(self, text):
