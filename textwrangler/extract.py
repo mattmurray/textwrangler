@@ -5,13 +5,12 @@ import textstat
 import string
 from langdetect import detect, detect_langs
 from textblob import TextBlob
-from sklearn.base import TransformerMixin
+from sklearn.base import BaseEstimator, TransformerMixin
 from better_profanity import profanity
 import multiprocessing as mp
 import traceback
-from gensim.models import Word2Vec
 
-class TextFeatureExtractor(TransformerMixin):
+class TextFeatureExtractor(BaseEstimator, TransformerMixin):
 
     def __init__(self, n_jobs=1, token_count=True, string_length=True, average_token_size=True,
                  stop_word_count=True, numerical_token_count=True, upper_token_count=True,
@@ -143,9 +142,6 @@ class TextFeatureExtractor(TransformerMixin):
         else:
             return {'punctuation_character_proportion': float(punctuation_character_count/string_length)}
 
-    # def _extract_sentence_count(self, text: Text) -> Dict:
-    #     pass
-
     def _extract_readability_scores(self, text: Text, scores=None) -> Dict:
 
         output = {}
@@ -191,7 +187,6 @@ class TextFeatureExtractor(TransformerMixin):
         return self
 
     def _process_item(self, item):
-
         try:
             output = {}
             if self.token_count == True:
@@ -279,72 +274,3 @@ class TextFeatureExtractor(TransformerMixin):
         results = [pool.map(self._process_item, text)]
         return results[0]
 
-class TrainWordToVec:
-
-    def __init__(self, size=150, window=10, min_count=2, workers=10, epochs=10, skip_gram=0):
-
-        '''
-
-        :param size:
-        The size of the dense vector to represent each token or word (i.e. the context or neighboring words).
-        If you have limited data, then size should be a much smaller value since you would only have so many
-        unique neighbors for a given word. If you have lots of data, it’s good to experiment with various sizes.
-        A value of 100–150 has worked well for me for similarity lookups.
-
-        :param window:
-        The maximum distance between the target word and its neighboring word. If your neighbor’s position is
-        greater than the maximum window width to the left or the right, then, some neighbors would not be considered
-        as being related to the target word. In theory, a smaller window should give you terms that are more related.
-        Again, if your data is not sparse, then the window size should not matter too much, as long as it’s not overly
-        narrow or overly broad. If you are not too sure about this, just use the default value.
-
-        :param min_count:
-        Minimium frequency count of words. The model would ignore words that do not satisfy the min_count. Extremely
-        infrequent words are usually unimportant, so its best to get rid of those. Unless your dataset is really tiny,
-        this does not really affect the model in terms of your final results. The settings here probably has more of
-        an effect on memory usage and storage requirements of the model files.
-
-        :param workers:
-        How many threads to use.
-
-        :param epochs:
-        Number of iterations (epochs) over the corpus. 5 is a good starting point, 10+ iterations better.
-
-        :param skip_gram:
-        Whether to train a continuous bag of words model (0) or a skip-gram model (1).
-
-        '''
-        self.size = size
-        self.window = window
-        self.min_count = min_count
-        self.workers = workers
-        self.iter = epochs
-        self.skip_gram = skip_gram
-        self.model = None
-
-    def fit(self, documents):
-        self.model = Word2Vec(size=self.size, window=self.window, min_count=self.min_count,
-                         workers=self.workers, iter=self.iter, sg=self.skip_gram)
-
-        self.model.build_vocab(documents)
-        self.model.train(documents, total_examples=self.model.corpus_count, epochs=self.model.iter)
-        return self
-
-    def save_model(self, path):
-        self.model.save(path)
-
-    def save_keyed_vectors(self, path):
-        self.model.wv.save(path)
-
-    def get_most_similar(self, word, top_n=5, positive=True):
-        if self.model is not None:
-            if positive == True:
-                return self.model.wv.most_similar(positive=[word], topn=top_n)
-            else:
-                return self.model.wv.most_similar(negative=[word], topn=top_n)
-        else:
-            return "No trained model."
-
-
-# emoji count
-# easy data augmentation / generate augmentations
