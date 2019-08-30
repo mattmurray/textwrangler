@@ -1,6 +1,5 @@
 import re
-import sys
-import unicodedata
+# largely taken from https://github.com/chartbeat-labs/textacy/blob/master/textacy/preprocessing/resources.py
 
 RE_LINEBREAK = re.compile(r"(\r\n|[\n\v])+")
 RE_NONBREAKING_SPACE = re.compile(r"[^\S\n\v]+", flags=re.UNICODE)
