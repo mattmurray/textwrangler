@@ -1,7 +1,6 @@
 # textwrangler
 
-
-A wrapper around some common NLP libraries for simple text cleaning jobs. 
+A small library making use of some widely used NLP tools for simple text cleaning tasks. 
 
 ### Dependencies
 
@@ -27,7 +26,7 @@ pip install textwrangler
 
 ### Usage
 
-There are currently five text cleaning classes:
+There are currently five classes for wrangling text:
 
 ```python
 from textwrangler import TextFeatureExtractor, TextNormalizer, TextRemover, TextReplacer, FingerPrintTransformer
