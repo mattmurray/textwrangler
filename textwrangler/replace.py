@@ -14,6 +14,8 @@ from .patterns import (
     RE_SHORT_URL,
     RE_USER_HANDLE
 )
+
+
 class TextReplacer(BaseEstimator, TransformerMixin):
 
     def __init__(self, contractions=False, currency_symbols=True, emails=False, hashtags=False, numbers=False,
@@ -72,25 +74,25 @@ class TextReplacer(BaseEstimator, TransformerMixin):
     def _contractions(self, text: Text) -> Text:
         return contractions.fix(text)
 
-    def _currency_symbols(self, text: Text, replace_with=" _CUR_ ") -> Text:
+    def _currency_symbols(self, text: Text, replace_with="_CUR_") -> Text:
         return RE_CURRENCY_SYMBOL.sub(replace_with, text)
 
-    def _emails(self, text: Text, replace_with=" _EMAIL_ ") -> Text:
+    def _emails(self, text: Text, replace_with="_EMAIL_") -> Text:
         return RE_EMAIL.sub(replace_with, text)
 
-    def _numbers(self, text: Text, replace_with=" _NUMBER_ ") -> Text:
+    def _numbers(self, text: Text, replace_with="_NUMBER_") -> Text:
         return RE_NUMBER.sub(replace_with, text)
 
-    def _hashtags(self, text: Text, replace_with=" _TAG_ ") -> Text:
+    def _hashtags(self, text: Text, replace_with="_TAG_") -> Text:
         return RE_HASHTAG.sub(replace_with, text)
 
-    def _phone_numbers(self, text: Text, replace_with=" _PHONE_ ") -> Text:
+    def _phone_numbers(self, text: Text, replace_with="_PHONE_") -> Text:
         return RE_PHONE_NUMBER.sub(replace_with, text)
 
-    def _urls(self, text: Text, replace_with=" _URL_ ") -> Text:
+    def _urls(self, text: Text, replace_with="_URL_") -> Text:
         return RE_URL.sub(replace_with, RE_SHORT_URL.sub(replace_with, text))
 
-    def _user_handles(self, text: Text, replace_with=" _USER_ ") -> Text:
+    def _user_handles(self, text: Text, replace_with="_USER_") -> Text:
         return RE_USER_HANDLE.sub(replace_with, text)
 
     def _numbers_with_text_repr(self, text: Text) -> Text:
