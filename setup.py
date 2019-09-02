@@ -26,6 +26,7 @@ setup(
     version='0.0.1',  # Required
     description='A simple library for cleaning and pre-processing text.',  # Optional
     url='https://github.com/mattmurray/textwrangler',  # Optional
+    download_url='https://github.com/mattmurray/textwrangler/archive/v0.0.1.tar.gz',
     classifiers=[  # Optional
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',
