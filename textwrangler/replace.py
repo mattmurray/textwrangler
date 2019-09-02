@@ -3,7 +3,7 @@ from typing import Text
 import contractions
 import inflect
 import nltk
-from sklearn.base import TransformerMixin
+from sklearn.base import BaseEstimator, TransformerMixin
 from .patterns import (
     RE_CURRENCY_SYMBOL,
     RE_EMAIL,
@@ -14,13 +14,50 @@ from .patterns import (
     RE_SHORT_URL,
     RE_USER_HANDLE
 )
+class TextReplacer(BaseEstimator, TransformerMixin):
 
-# nltk.download('punkt')
+    def __init__(self, contractions=False, currency_symbols=True, emails=False, hashtags=False, numbers=False,
+                 numbers_with_text_repr=False, phone_numbers=False, urls=False, user_handles=False):
 
-class TextReplacer(TransformerMixin):
+        '''
+        Parameters
+        ----------
 
-    def __init__(self, contractions=False, currency_symbols=True, emails=False, numbers=False, hashtags=False,
-                 phone_numbers=False, urls=False, user_handles=False, numbers_with_text_repr=False):
+        :param contractions : default: False
+        If True, contractions of tokens are resolved using the contractions library. For example:
+
+        "He's" -> "He is".
+
+        See https://github.com/kootenpv/contractions.
+
+        :param currency_symbols : default: True
+        If True, currency symbols are replaced with " _CUR_ ".
+
+        :param emails : default: False
+        If True, email addresses are replaced with " _EMAIL_ ".
+
+        :param hashtags : default: False
+        If True, Twitter hashtags are replaced with " _TAG_ ".
+
+        :param numbers : default: False
+        If True, numerical tokens are replaced with " _NUMBER_ ".
+
+        :param numbers_with_text_repr : default: False
+        If True, numerical representations are replaced with text representations with the inflect library. For example:
+
+        "12" -> "Twelve".
+
+        See https://github.com/jazzband/inflect.
+
+        :param phone_numbers : default: False
+        If True, phone numbers are replaced with " _PHONE_ ".
+
+        :param urls : default: False
+        If True, URLs are replaced with " _URL_ ".
+
+        :param user_handles : default: False
+        If True, Twitter user handles are replaced with " _USER_ ".
+        '''
 
         self.contractions = contractions
         self.currency_symbols = currency_symbols
@@ -66,40 +103,38 @@ class TextReplacer(TransformerMixin):
     def transform(self, text, y=None):
 
         output = []
-
         if type(text) == str:
             text = [text]
 
         for item in text:
-            output_text = item
 
             if self.contractions == True:
-                output_text = self._contractions(output_text)
+                item = self._contractions(item)
 
             if self.currency_symbols == True:
-                output_text = self._currency_symbols(output_text)
+                item = self._currency_symbols(item)
 
             if self.emails == True:
-                output_text = self._emails(output_text)
+                item = self._emails(item)
 
             if self.numbers == True:
-                output_text = self._numbers(output_text)
+                item = self._numbers(item)
 
             if self.hashtags == True:
-                output_text = self._hashtags(output_text)
+                item = self._hashtags(item)
 
             if self.phone_numbers == True:
-                output_text = self._phone_numbers(output_text)
+                item = self._phone_numbers(item)
 
             if self.urls == True:
-                output_text = self._urls(output_text)
+                item = self._urls(item)
 
             if self.user_handles == True:
-                output_text = self._user_handles(output_text)
+                item = self._user_handles(item)
 
             if self.numbers_with_text_repr == True:
-                output_text = self._numbers_with_text_repr(output_text)
+                item = self._numbers_with_text_repr(item)
 
-            output.append(output_text)
+            output.append(item)
 
         return output
