@@ -1,24 +1,55 @@
 # -*- coding: utf-8 -*-
-from textblob import TextBlob
-from typing import Text
 import unicodedata
+import re
+from typing import Text
+from textblob import TextBlob
+from sklearn.base import BaseEstimator, TransformerMixin
 from .patterns import (
     RE_NONBREAKING_SPACE,
     RE_LINEBREAK,
     QUOTE_TRANSLATION_TABLE
 )
-import re
-from sklearn.base import TransformerMixin
 
-class TextNormalizer(TransformerMixin):
+class TextNormalizer(BaseEstimator, TransformerMixin):
 
-    def __init__(self, case=True, spelling=False, hyphenated_words=True, quotation_marks=True, unicode_characters=True,
+    def __init__(self, case=True, hyphenated_words=True, quotation_marks=True, spelling=False, unicode_characters=True,
                  whitespace=True):
 
+        '''
+
+        Parameters
+        ----------
+
+        :param case : default: True
+        If True, all characters are converted to lowercase.
+
+        :param hyphenated_words : default: True
+        If True, hyphens in hypenated words are converted to spaces. For example,
+
+        "High-tech" -> "High tech"
+        "Data-scientist" -> "Data scientist"
+
+        :param quotation_marks : default: True
+        If True, all quotation marks are converted to standard ASCII equivalents.
+        Copied from Textacy's preprocessing functionality (but without the SpaCy dependency).
+
+        :param spelling : default: False
+        If True, the correction of spelling mistakes is attempted with TextBlob's correct method.
+        See https://textblob.readthedocs.io/en/dev/api_reference.html#textblob.blob.TextBlob.correct.
+
+        :param unicode_characters : default: True
+        If True, unicode characters are normalized.
+        Copied from Textacy's preprocessing functionality (but without the SpaCy dependency).
+
+        :param whitespace : default: True
+        If True, cleans leading/trailing whitespace and large whitespace gaps with single spaces.
+        Copied from Textacy's preprocessing functionality (but without the SpaCy dependency).
+        '''
+
         self.case = case
-        self.spelling = spelling
         self.hyphenated_words = hyphenated_words
         self.quotation_marks = quotation_marks
+        self.spelling = spelling
         self.unicode_characters = unicode_characters
         self.whitespace = whitespace
 
@@ -30,7 +61,6 @@ class TextNormalizer(TransformerMixin):
 
     def _normalize_hyphenated_words(self, text: Text) -> Text:
         return re.sub(r'([a-zA-Z])-([a-zA-Z])', r'\1 \2', text)
-        # return RE_HYPHENATED_WORD.sub(r"\1\2", text)
 
     def _normalize_quotation_marks(self, text: Text) -> Text:
         return text.translate(QUOTE_TRANSLATION_TABLE)
@@ -47,31 +77,29 @@ class TextNormalizer(TransformerMixin):
     def transform(self, text, y=None):
 
         output = []
-
         if type(text) == str:
             text = [text]
 
         for item in text:
-            output_text = item
 
             if self.spelling == True:
-                output_text = self._normalize_spelling(output_text)
+                item = self._normalize_spelling(item)
 
             if self.case == True:
-                output_text = self._normalize_case(output_text)
+                item = self._normalize_case(item)
 
             if self.hyphenated_words == True:
-                output_text = self._normalize_hyphenated_words(output_text)
+                item = self._normalize_hyphenated_words(item)
 
             if self.quotation_marks == True:
-                output_text = self._normalize_quotation_marks(output_text)
+                item = self._normalize_quotation_marks(item)
 
             if self.unicode_characters == True:
-                output_text = self._normalize_unicode(output_text)
+                item = self._normalize_unicode(item)
 
             if self.whitespace == True:
-                output_text = self._normalize_whitespace(output_text)
+                item = self._normalize_whitespace(item)
 
-            output.append(output_text)
+            output.append(item)
 
         return output
