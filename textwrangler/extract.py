@@ -161,7 +161,6 @@ class TextFeatureExtractor(BaseEstimator, TransformerMixin):
           return {'average_token_size': sum(len(token) for token in tokens)/len(tokens)}
 
     def _extract_stop_word_count(self, text: Text) -> Dict:
-        # nltk.download('stopwords')
         return {'stop_word_count': len([token for token in text.split() if token in stopwords.words('english')])}
 
     def _extract_numerical_token_count(self, text: Text) -> Dict:
