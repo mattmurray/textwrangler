@@ -12,13 +12,107 @@ import traceback
 
 class TextFeatureExtractor(BaseEstimator, TransformerMixin):
 
-    def __init__(self, n_jobs=1, token_count=True, string_length=True, average_token_size=True,
-                 stop_word_count=True, numerical_token_count=True, upper_token_count=True,
-                 readability_scores=True, language=False, polarity=True, subjectivity=True, title_token_count=True,
-                 unique_token_proportion=True, number_of_unique_tokens=True, question_mark_count=True,
-                 exclamation_mark_count=True, title_token_proportion=True, upper_token_proportion=True,
-                 numerical_token_proportion=True, stop_word_proportion=True, punctuation_character_count=True,
-                 punctuation_proportion=True, contains_profanity=True):
+    def __init__(self, average_token_size=True, contains_profanity=True, exclamation_mark_count=True, language=False,
+                 number_of_unique_tokens=True, numerical_token_count=True, numerical_token_proportion=True, n_jobs=1,
+                 polarity=True, punctuation_character_count=True, punctuation_proportion=True, question_mark_count=True,
+                 readability_scores=True, stop_word_count=True, stop_word_proportion=True, string_length=True,
+                 subjectivity=True, title_token_count=True, title_token_proportion=True, token_count=True,
+                 upper_token_count=True, upper_token_proportion=True, unique_token_proportion=True):
+
+        '''
+        Parameters
+        ----------
+
+        :param average_token_size : default: True
+        If True, returns the mean character length of the tokens in the string.
+
+        :param contains_profanity : default: True
+        If True, checks for profanity in the string using the better-profanity library.
+
+        See https://github.com/snguyenthanh/better_profanity.
+
+        :param exclamation_mark_count : default: True
+        If True, counts the number of exclamation marks in the string.
+
+        :param language : default: False
+        If True, detects the language of the string using the langdetect library, a port of the Google
+        language-detection library. Note that by default it is set to False because it is slow to compute.
+
+        See https://github.com/Mimino666/langdetect.
+
+        :param number_of_unique_tokens : default: True
+        If True, counts the number of unique tokens in the string.
+
+        :param numerical_token_count : default: True
+        If True, counts the number of tokens in the string that are numbers.
+
+        :param numerical_token_proportion : default: True
+        If True, calculates the proportion of all tokens in the string that are numbers.
+
+        :param n_jobs : default: 1
+        The number of cores to use when processing.
+
+        :param polarity : default: True
+        If True, returns the polarity score calculated with TextBlob sentiment analysis. The polarity score is a
+        float ranging from -1.0 to +1.0.
+
+        See https://textblob.readthedocs.io/en/dev/quickstart.html#sentiment-analysis.
+
+        :param punctuation_character_count : default: True
+        If True, returns the number of punctuation characters in the string.
+
+        :param punctuation_proportion : default: True
+        If True, returns the amount of punctuation in the string as a proportion of the total character count.
+
+        :param question_mark_count : default: True
+        If True, counts the number of question marks in the string.
+
+        :param readability_scores : default: True
+        If True, returns a set of readability scores as calculated by the textstat library.
+
+        See https://github.com/shivam5992/textstat.
+
+        :param stop_word_count : default: True
+        If True, returns the number of tokens that are stop words.
+
+        :param stop_word_proportion : default: True
+        If True, returns the proportion of all the tokens in the string that are stop words.
+
+        :param string_length : default: True
+        If True, returns the total number of characters in the string, excluding white space.
+
+        :param subjectivity : default: True
+        If True, returns the subjectiity score score calculated with TextBlob sentiment analysis. The subjectivity score
+        is a float ranging from 0.0 (very objective/factual) to 1.0 (very subjective/opinionated).
+
+        See https://textblob.readthedocs.io/en/dev/quickstart.html#sentiment-analysis.
+
+        :param title_token_count : default: True
+        If True, counts the number of tokens in the string with a capitalised first character. For example:
+
+        'London'
+        'Government'
+        'Mr'
+
+        :param title_token_proportion : default: True
+        If True, returns the proportion of all the tokens in the string that have a capitalised first character.
+
+        :param token_count : default: True
+        If True, returns a count of the number of tokens in the string.
+
+        :param upper_token_count : default: True
+        If True, returns the count of tokens in the string where all characters are upper cased. For example:
+
+        'GREAT'
+        'NO'
+
+        :param upper_token_proportion : default: True
+        If True, returns the proportion of all the tokens in the string that are upper cased.
+
+        :param unique_token_proportion : default: True
+        If True, returns the proportion of all the tokens in the string that are unique.
+
+        '''
 
         self.n_jobs = n_jobs
         self.token_count = token_count
