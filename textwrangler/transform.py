@@ -11,11 +11,26 @@ import numpy as np
 class FingerPrintTransformer(TextRemover, TextNormalizer, BaseEstimator, TransformerMixin):
 
     def __init__(self, n_gram=None, return_fingerprints=False):
+
+        '''
+        Parameters
+        ----------
+
+        :param n_gram : default: None
+        If None, the standard fingerprint clustering method is applied.
+        If an int is supplied, n-gram fingerprint clustering is applied.
+
+        :param return_fingerprints : default: False
+        If False, cleaned strings are returned based on the most common string in each fingerprint cluster.
+        If True, the actual fingerprints are returned.
+
+        Adapted from https://gist.github.com/cjdd3b/0386f139bb953f046c6e.
+        '''
+
         self.n_gram = n_gram
         self.return_fingerprints = return_fingerprints
 
     def __unique_preserving_order(self, seq):
-        # https://www.peterbe.com/plog/fastest-way-to-uniquify-a-list-in-python-3.6
         return list(dict.fromkeys(seq))
 
     def __get_fingerprint(self, text):
