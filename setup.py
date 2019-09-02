@@ -44,7 +44,8 @@ setup(
                       'textstat',
                       'textsearch',
                       'inflect',
-                      'unidecode'
+                      'unidecode',
+                      'scikit-learn'
                       ],  # Optional
     setup_requires=['nltk'],
     cmdclass={"install": PostInstall},
