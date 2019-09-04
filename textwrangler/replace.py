@@ -17,49 +17,48 @@ from .patterns import (
 
 
 class TextReplacer(BaseEstimator, TransformerMixin):
+    '''
+    Parameters
+    ----------
+
+    :param contractions : default: False
+    If True, contractions of tokens are resolved using the contractions library. For example:
+
+    "He's" -> "He is".
+
+    See https://github.com/kootenpv/contractions.
+
+    :param currency_symbols : default: True
+    If True, currency symbols are replaced with " _CUR_ ".
+
+    :param emails : default: False
+    If True, email addresses are replaced with " _EMAIL_ ".
+
+    :param hashtags : default: False
+    If True, Twitter hashtags are replaced with " _TAG_ ".
+
+    :param numbers : default: False
+    If True, numerical tokens are replaced with " _NUMBER_ ".
+
+    :param numbers_with_text_repr : default: False
+    If True, numerical representations are replaced with text representations with the inflect library. For example:
+
+    "12" -> "Twelve".
+
+    See https://github.com/jazzband/inflect.
+
+    :param phone_numbers : default: False
+    If True, phone numbers are replaced with " _PHONE_ ".
+
+    :param urls : default: False
+    If True, URLs are replaced with " _URL_ ".
+
+    :param user_handles : default: False
+    If True, Twitter user handles are replaced with " _USER_ ".
+    '''
 
     def __init__(self, contractions=False, currency_symbols=True, emails=False, hashtags=False, numbers=False,
                  numbers_with_text_repr=False, phone_numbers=False, urls=False, user_handles=False):
-
-        '''
-        Parameters
-        ----------
-
-        :param contractions : default: False
-        If True, contractions of tokens are resolved using the contractions library. For example:
-
-        "He's" -> "He is".
-
-        See https://github.com/kootenpv/contractions.
-
-        :param currency_symbols : default: True
-        If True, currency symbols are replaced with " _CUR_ ".
-
-        :param emails : default: False
-        If True, email addresses are replaced with " _EMAIL_ ".
-
-        :param hashtags : default: False
-        If True, Twitter hashtags are replaced with " _TAG_ ".
-
-        :param numbers : default: False
-        If True, numerical tokens are replaced with " _NUMBER_ ".
-
-        :param numbers_with_text_repr : default: False
-        If True, numerical representations are replaced with text representations with the inflect library. For example:
-
-        "12" -> "Twelve".
-
-        See https://github.com/jazzband/inflect.
-
-        :param phone_numbers : default: False
-        If True, phone numbers are replaced with " _PHONE_ ".
-
-        :param urls : default: False
-        If True, URLs are replaced with " _URL_ ".
-
-        :param user_handles : default: False
-        If True, Twitter user handles are replaced with " _USER_ ".
-        '''
 
         self.contractions = contractions
         self.currency_symbols = currency_symbols

@@ -11,40 +11,39 @@ from .patterns import (
 )
 
 class TextNormalizer(BaseEstimator, TransformerMixin):
+    '''
+
+    Parameters
+    ----------
+
+    :param case : default: True
+    If True, all characters are converted to lowercase.
+
+    :param hyphenated_words : default: True
+    If True, hyphens in hypenated words are converted to spaces. For example,
+
+    "High-tech" -> "High tech"
+    "Data-scientist" -> "Data scientist"
+
+    :param quotation_marks : default: True
+    If True, all quotation marks are converted to standard ASCII equivalents.
+    Copied from Textacy's preprocessing functionality (but without the SpaCy dependency).
+
+    :param spelling : default: False
+    If True, the correction of spelling mistakes is attempted with TextBlob's correct method.
+    See https://textblob.readthedocs.io/en/dev/api_reference.html#textblob.blob.TextBlob.correct.
+
+    :param unicode_characters : default: True
+    If True, unicode characters are normalized.
+    Copied from Textacy's preprocessing functionality (but without the SpaCy dependency).
+
+    :param whitespace : default: True
+    If True, cleans leading/trailing whitespace and large whitespace gaps with single spaces.
+    Copied from Textacy's preprocessing functionality (but without the SpaCy dependency).
+    '''
 
     def __init__(self, case=True, hyphenated_words=True, quotation_marks=True, spelling=False, unicode_characters=True,
                  whitespace=True):
-
-        '''
-
-        Parameters
-        ----------
-
-        :param case : default: True
-        If True, all characters are converted to lowercase.
-
-        :param hyphenated_words : default: True
-        If True, hyphens in hypenated words are converted to spaces. For example,
-
-        "High-tech" -> "High tech"
-        "Data-scientist" -> "Data scientist"
-
-        :param quotation_marks : default: True
-        If True, all quotation marks are converted to standard ASCII equivalents.
-        Copied from Textacy's preprocessing functionality (but without the SpaCy dependency).
-
-        :param spelling : default: False
-        If True, the correction of spelling mistakes is attempted with TextBlob's correct method.
-        See https://textblob.readthedocs.io/en/dev/api_reference.html#textblob.blob.TextBlob.correct.
-
-        :param unicode_characters : default: True
-        If True, unicode characters are normalized.
-        Copied from Textacy's preprocessing functionality (but without the SpaCy dependency).
-
-        :param whitespace : default: True
-        If True, cleans leading/trailing whitespace and large whitespace gaps with single spaces.
-        Copied from Textacy's preprocessing functionality (but without the SpaCy dependency).
-        '''
 
         self.case = case
         self.hyphenated_words = hyphenated_words
