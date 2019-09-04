@@ -10,13 +10,13 @@ class FingerPrintTransformer(TextRemover, TextNormalizer, BaseEstimator, Transfo
     Parameters
     ----------
 
-    :param n_gram : default: None
-    If None, the standard fingerprint clustering method is applied.
-    If an int is supplied, n-gram fingerprint clustering is applied.
+    n_gram : default: None
+        If None, the standard fingerprint clustering method is applied.
+        If an int is supplied, n-gram fingerprint clustering is applied.
 
-    :param return_fingerprints : default: False
-    If False, cleaned strings are returned based on the most common string in each fingerprint cluster.
-    If True, the actual fingerprints are returned.
+    return_fingerprints : default: False
+        If False, cleaned strings are returned based on the most common string in each fingerprint cluster.
+        If True, the actual fingerprints are returned.
     '''
 
     def __init__(self, n_gram=None, return_fingerprints=False):

@@ -12,20 +12,20 @@ class TextRemover(TextNormalizer, BaseEstimator, TransformerMixin):
     Parameters
     ----------
 
-    :param accents : default: True
-    If True, removes all accents from characters. For example, 'Café' -> 'Cafe'.
+    accents : default: True
+        If True, removes all accents from characters. For example, 'Café' -> 'Cafe'.
 
-    :param html : default: False
-    If True, strips HTML tags from the text using BeautifulSoup.
+    html : default: False
+        If True, strips HTML tags from the text using BeautifulSoup.
 
-    :param numbers : default: False
-    If True, removes all numerical characters from the string.
+    numbers : default: False
+        If True, removes all numerical characters from the string.
 
-    :param punctuation : default: True
-    If True, removes all punctuation characters from the string.
+    punctuation : default: True
+        If True, removes all punctuation characters from the string.
 
-    :param stop_words : default: False
-    If True, removes all stop words from the string.
+    stop_words : default: False
+        If True, removes all stop words from the string.
     '''
 
     def __init__(self, accents=True, html=False, numbers=False, punctuation=True, stop_words=False):
