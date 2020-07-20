@@ -12,7 +12,7 @@ class TextRemover(TextNormalizer, BaseEstimator, TransformerMixin):
     Parameters
     ----------
 
-    accents : default: True
+    accents : default: False
         If True, removes all accents from characters. For example, 'Café' -> 'Cafe'.
 
     html : default: False
@@ -28,7 +28,7 @@ class TextRemover(TextNormalizer, BaseEstimator, TransformerMixin):
         If True, removes all stop words from the string.
     '''
 
-    def __init__(self, accents=True, html=False, numbers=False, punctuation=True, stop_words=False):
+    def __init__(self, accents=False, html=False, numbers=False, punctuation=True, stop_words=False):
         self.punctuation = punctuation
         self.accents = accents
         self.numbers = numbers
