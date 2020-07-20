@@ -15,15 +15,15 @@ class TextFeatureExtractor(BaseEstimator, TransformerMixin):
     Parameters
     ----------
 
-    average_token_size : default: True
+    average_token_size : default: False
         If True, returns the mean character length of the tokens in the string.
 
-    contains_profanity : default: True
+    contains_profanity : default: False
         If True, checks for profanity in the string using the better-profanity library.
 
         See https://github.com/snguyenthanh/better_profanity.
 
-    exclamation_mark_count : default: True
+    exclamation_mark_count : default: False
         If True, counts the number of exclamation marks in the string.
 
     language : default: False
@@ -32,76 +32,76 @@ class TextFeatureExtractor(BaseEstimator, TransformerMixin):
 
         See https://github.com/Mimino666/langdetect.
 
-    number_of_unique_tokens : default: True
+    number_of_unique_tokens : default: False
         If True, counts the number of unique tokens in the string.
 
-    numerical_token_count : default: True
+    numerical_token_count : default: False
         If True, counts the number of tokens in the string that are numbers.
 
-    numerical_token_proportion : default: True
+    numerical_token_proportion : default: False
         If True, calculates the proportion of all tokens in the string that are numbers.
 
     n_jobs : default: 1
         The number of cores to use when processing.
 
-    polarity : default: True
+    polarity : default: False
         If True, returns the polarity score calculated with TextBlob sentiment analysis. The polarity score is a
         float ranging from -1.0 to +1.0.
 
         See https://textblob.readthedocs.io/en/dev/quickstart.html#sentiment-analysis.
 
-    punctuation_character_count : default: True
+    punctuation_character_count : default: False
         If True, returns the number of punctuation characters in the string.
 
-    punctuation_proportion : default: True
+    punctuation_proportion : default: False
         If True, returns the amount of punctuation in the string as a proportion of the total character count.
 
-    question_mark_count : default: True
+    question_mark_count : default: False
         If True, counts the number of question marks in the string.
 
-    readability_scores : default: True
+    readability_scores : default: False
         If True, returns a set of readability scores as calculated by the textstat library.
 
         See https://github.com/shivam5992/textstat.
 
-    stop_word_count : default: True
+    stop_word_count : default: False
         If True, returns the number of tokens that are stop words.
 
-    stop_word_proportion : default: True
+    stop_word_proportion : default: False
         If True, returns the proportion of all the tokens in the string that are stop words.
 
-    string_length : default: True
+    string_length : default: False
         If True, returns the total number of characters in the string, excluding white space.
 
-    subjectivity : default: True
+    subjectivity : default: False
         If True, returns the subjectiity score score calculated with TextBlob sentiment analysis. The subjectivity score
         is a float ranging from 0.0 (very objective/factual) to 1.0 (very subjective/opinionated).
 
         See https://textblob.readthedocs.io/en/dev/quickstart.html#sentiment-analysis.
 
-    title_token_count : default: True
+    title_token_count : default: False
         If True, counts the number of tokens in the string with a capitalised first character. For example:
 
         * 'London'
         * 'Government'
         * 'Mr'
 
-    title_token_proportion : default: True
+    title_token_proportion : default: False
         If True, returns the proportion of all the tokens in the string that have a capitalised first character.
 
-    token_count : default: True
+    token_count : default: False
         If True, returns a count of the number of tokens in the string.
 
-    upper_token_count : default: True
+    upper_token_count : default: False
         If True, returns the count of tokens in the string where all characters are upper cased. For example:
 
         * 'GREAT'
         * 'NO'
 
-    upper_token_proportion : default: True
+    upper_token_proportion : default: False
         If True, returns the proportion of all the tokens in the string that are upper cased.
 
-    unique_token_proportion : default: True
+    unique_token_proportion : default: False
         If True, returns the proportion of all the tokens in the string that are unique.
 
     '''
