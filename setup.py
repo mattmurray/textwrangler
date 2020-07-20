@@ -23,10 +23,10 @@ here = path.abspath(path.dirname(__file__))
 
 setup(
     name='textwrangler',  # Required
-    version='0.0.1',  # Required
+    version='0.0.2',  # Required
     description='A simple library for cleaning and pre-processing text.',  # Optional
     url='https://github.com/mattmurray/textwrangler',  # Optional
-    download_url='https://github.com/mattmurray/textwrangler/archive/v0.0.1.tar.gz',
+    download_url='https://github.com/mattmurray/textwrangler/archive/v0.0.2.tar.gz',
     classifiers=[  # Optional
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',
