@@ -106,12 +106,12 @@ class TextFeatureExtractor(BaseEstimator, TransformerMixin):
 
     '''
 
-    def __init__(self, average_token_size=True, contains_profanity=True, exclamation_mark_count=True, language=False,
-                 number_of_unique_tokens=True, numerical_token_count=True, numerical_token_proportion=True, n_jobs=1,
-                 polarity=True, punctuation_character_count=True, punctuation_proportion=True, question_mark_count=True,
-                 readability_scores=True, stop_word_count=True, stop_word_proportion=True, string_length=True,
-                 subjectivity=True, title_token_count=True, title_token_proportion=True, token_count=True,
-                 upper_token_count=True, upper_token_proportion=True, unique_token_proportion=True):
+    def __init__(self, average_token_size=False, contains_profanity=False, exclamation_mark_count=False, language=False,
+                 number_of_unique_tokens=False, numerical_token_count=False, numerical_token_proportion=False, n_jobs=1,
+                 polarity=False, punctuation_character_count=False, punctuation_proportion=False, question_mark_count=False,
+                 readability_scores=False, stop_word_count=False, stop_word_proportion=False, string_length=False,
+                 subjectivity=False, title_token_count=False, title_token_proportion=False, token_count=False,
+                 upper_token_count=False, upper_token_proportion=False, unique_token_proportion=False):
 
         self.n_jobs = n_jobs
         self.token_count = token_count
