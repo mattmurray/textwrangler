@@ -16,16 +16,16 @@ class TextNormalizer(BaseEstimator, TransformerMixin):
     Parameters
     ----------
 
-    case : default: True
+    case : default: False
         If True, all characters are converted to lowercase.
 
-    hyphenated_words : default: True
+    hyphenated_words : default: False
         If True, hyphens in hypenated words are converted to spaces. For example,
 
         * "High-tech" -> "High tech"
         * "Data-scientist" -> "Data scientist"
 
-    quotation_marks : default: True
+    quotation_marks : default: False
         If True, all quotation marks are converted to standard ASCII equivalents.
         Copied from Textacy's preprocessing functionality (but without the SpaCy dependency).
 
@@ -33,17 +33,17 @@ class TextNormalizer(BaseEstimator, TransformerMixin):
         If True, the correction of spelling mistakes is attempted with TextBlob's correct method.
         See https://textblob.readthedocs.io/en/dev/api_reference.html#textblob.blob.TextBlob.correct.
 
-    unicode_characters : default: True
+    unicode_characters : default: False
         If True, unicode characters are normalized.
         Copied from Textacy's preprocessing functionality (but without the SpaCy dependency).
 
-    whitespace : default: True
+    whitespace : default: False
         If True, cleans leading/trailing whitespace and large whitespace gaps with single spaces.
         Copied from Textacy's preprocessing functionality (but without the SpaCy dependency).
     '''
 
-    def __init__(self, case=True, hyphenated_words=True, quotation_marks=True, spelling=False, unicode_characters=True,
-                 whitespace=True):
+    def __init__(self, case=False, hyphenated_words=False, quotation_marks=False, spelling=False, unicode_characters=False,
+                 whitespace=False):
 
         self.case = case
         self.hyphenated_words = hyphenated_words
