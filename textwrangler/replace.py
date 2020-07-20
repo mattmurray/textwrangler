@@ -28,7 +28,7 @@ class TextReplacer(BaseEstimator, TransformerMixin):
 
         See https://github.com/kootenpv/contractions.
 
-    currency_symbols : default: True
+    currency_symbols : default: False
         If True, currency symbols are replaced with " _CUR_ ".
 
     emails : default: False
@@ -57,7 +57,7 @@ class TextReplacer(BaseEstimator, TransformerMixin):
         If True, Twitter user handles are replaced with " _USER_ ".
     '''
 
-    def __init__(self, contractions=False, currency_symbols=True, emails=False, hashtags=False, numbers=False,
+    def __init__(self, contractions=False, currency_symbols=False, emails=False, hashtags=False, numbers=False,
                  numbers_with_text_repr=False, phone_numbers=False, urls=False, user_handles=False):
 
         self.contractions = contractions
